@@ -1,7 +1,15 @@
 import paper from 'paper'
-import { Font } from '../src'
+import { Font, WordTree } from '../src'
 
-paper.setup(document.querySelector('canvas'))
+async function main() {
+  paper.setup(document.querySelector('canvas'))
 
-const font = new Font()
-font.load(require('../src/branches.svg'))
+  const font = new Font()
+  await font.load(require('../src/branches.svg'))
+
+  const tree = new WordTree({
+    word: 'astsitzer',
+    font
+  })
+}
+main()
