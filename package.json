@@ -2,17 +2,25 @@
   "name": "grow-branches",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "parcel dev/index.html",
-    "build": "parcel build src/index.js"
-  },
+  "main": "dist/grow-branches.cjs.js",
+  "module": "dist/grow-branches.esm.js",
+  "browser": "dist/grow-branches.umd.js",
   "author": "Arno Schlipf",
   "license": "ISC",
+  "scripts": {
+    "dev": "webpack-dev-server"
+  },
   "devDependencies": {
-    "prettier": "^1.19.1"
+    "@babel/core": "^7.8.7",
+    "babel-loader": "^8.0.6",
+    "prettier": "^1.19.1",
+    "webpack": "^5.0.0-beta.13",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3"
   },
   "dependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.8.3",
+    "aglfn": "^1.0.2",
     "paper": "^0.12.4"
   }
 }
