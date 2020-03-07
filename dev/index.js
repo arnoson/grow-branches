@@ -8,7 +8,7 @@ async function main() {
   await font.load(require('../src/branches.svg'))
 
   const tree = new WordTree({
-    word: 'astsitzer',
+    word: 'asterix',
     font
   })
 }

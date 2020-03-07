@@ -18,24 +18,17 @@ export class WordTree {
   _growRecursive(prevGlyphItem, string) {
     if (string.length) {
       const glyph = this._getGlyph(string[0])
-      const definitionItem = prevGlyphItem.definition.item
 
-      for (const child of definitionItem.children) {
+      for (const child of prevGlyphItem.children) {
         // Place glyph.
         const glyphItem = glyph.createGlyphItem()
 
-        const tangentOut = child.lastCurve
-          .getTangentAt(child.lastCurve.length)
-          .rotate(prevGlyphItem.matrix.rotation)
-        const tangentIn = glyphItem.definition.item.firstChild.firstCurve.getTangentAt(
-          0
-        )
+        const tangentOut = child.lastCurve.getTangentAt(child.lastCurve.length)
+        const tangentIn = glyphItem.firstChild.firstCurve.getTangentAt(0)
 
         glyphItem.rotate(tangentOut.angle + 90)
         glyphItem.rotate((tangentIn.angle + 90) * -1)
-        glyphItem.position = child.lastSegment.point.transform(
-          prevGlyphItem.matrix
-        )
+        glyphItem.position = child.lastSegment.point
         this._growRecursive(glyphItem, string.slice(1))
       }
     }

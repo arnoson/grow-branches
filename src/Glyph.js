@@ -1,18 +1,13 @@
-import { SymbolDefinition } from 'paper'
+import { SymbolDefinition, project } from 'paper'
 
 export class Glyph {
   constructor(item) {
-    const clone = item.clone()
-    clone.pivot = clone.firstChild.firstSegment.point
-    this.symbol = new SymbolDefinition(clone)
+    item.pivot = item.firstChild.firstSegment.point
+    this.item = item
   }
 
   createGlyphItem() {
-    const { symbol } = this
-    const instance = symbol.place()
-    // When placing instances somehow the pivot of the the original item gets
-    // lost, so we have to restore it manually.
-    instance.pivot = symbol.item.pivot
-    return instance
+    // ? where should new glyph instances be inserted?
+    return project.activeLayer.addChild(this.item.clone())
   }
 }
