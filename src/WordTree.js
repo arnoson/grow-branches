@@ -114,7 +114,18 @@ export class WordTree {
     for (let i = 0; i < glyphs.length; i++) {
       for (const branchA of glyph.branches) {
         for (const branchB of glyphs[i].branches) {
-          if (branchA.getCrossings(branchB).length) {
+          // Get intersections, but exclude the trunk's starting point, because
+          // they should intersect there.
+          const intersections = branchA.getIntersections(
+            branchB,
+            inter => !inter.point.equals(glyph.trunk.firstSegment.point)
+          )
+          // Allow one intersection, if it isn't a crossing. If branches can
+          // touch themselves at one point it will result in a 'fuller' tree.
+          if (
+            intersections.length &&
+            (intersections.length > 1 || intersections[0].isCrossing())
+          ) {
             return true
           }
         }

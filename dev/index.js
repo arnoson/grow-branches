@@ -22,6 +22,10 @@ async function main() {
       }
     }
     tree.position = paper.view.bounds.bottomCenter
+    tree.item.style = {
+      strokeWidth: 5,
+      strokeColor: 'rgba(0, 0, 255, 0.5)'
+    }
   })
 }
 main()
