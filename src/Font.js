@@ -1,22 +1,35 @@
 import aglfn from 'aglfn'
 import { Glyph } from './Glyph'
-import paper from 'paper'
 import { loadSVG } from './utils'
 
+/**
+ * @typedef {Object} FontInfo
+ * @property {Map} glyphs - The glyphs.
+ */
+
 export class Font {
-  constructor(scope = paper) {
+  constructor() {
     this.url = null
-    this.scope = scope
     this.item = null
     this.glyphs = new Map()
   }
 
+  /**
+   * Load and parse a svg file.
+   * @param {string} url – The url of the font's svg file.
+   */
+  // TODO accept item directly.
   async load(url) {
     this.item = await loadSVG(url, { insert: false })
     const { glyphs } = this.parse(this.item)
     this.glyphs = glyphs
   }
 
+  /**
+   * Parse the item.
+   * @param {paper.Group} item - The item to parse.
+   * @returns {FontInfo}
+   */
   parse(item) {
     const glyphs = new Map()
 

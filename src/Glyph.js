@@ -1,9 +1,16 @@
 import { SymbolDefinition, project } from 'paper'
 
 export class Glyph {
+  /**
+   * @param {paper.Group} item  – The original glyph item.
+   */
   constructor(item) {
-    item.pivot = item.firstChild.firstSegment.point
     this.item = item
+    // All children of a glyph are it's branches. The first item also is the
+    // trunk.
+    this.trunk = item.firstChild
+    item.pivot = this.trunk.firstSegment.point
+    this.angleIn = this.trunk.firstCurve.getTangentAt(0).angle
   }
 
   createGlyphItem() {
