@@ -6,10 +6,13 @@ export class WordTree {
    * @param {Branches.Font} font – The font.
    * @param {string} [word] - The word to grow.
    */
-  constructor({ font, word = null }) {
+  constructor({ font, word = null, branchBottomDistance = 30 }) {
     this.word = word
     this.font = font
-    this.glyphItems = new Group()
+    this.branchBottomDistance = branchBottomDistance
+    this.glyphs = []
+    this.lowestGlyph = null
+    this.item = new Group()
     word && this.grow(word)
   }
 
@@ -18,51 +21,45 @@ export class WordTree {
    * @param {string} string – The word to grow.
    */
   grow(string) {
-    const glyph = this._getGlyph(string[0])
-    const glyphItem = glyph.createGlyphItem()
-    glyphItem.position = view.center
-    this._growRecursive(glyphItem, string.slice(1))
+    const glyph = this._createGlyph(string[0])
+    this._addGlyph(glyph)
+    this._growRecursive(glyph, string.slice(1))
+    this.item.pivot = glyph.item.pivot
+  }
+
+  chop() {
+    for (const glyph of this.glyphs) {
+      glyph.remove()
+    }
+    this.glyphs = []
+    this.lowestGlyph = null
   }
 
   /**
    * Continue growing the word recursively.
    * @private
-   * @param {paper.Group} prevGlyphItem - The previous glyph item.
+   * @param {Branches.Glyph} prevGlyph - The previous glyph.
    * @param {string} string - The remaining characters to grow.
    */
-  _growRecursive(prevGlyphItem, string) {
-    const { glyphItems } = this
-
+  _growRecursive(prevGlyph, string) {
     // Only keep growing if we have characters left.
     if (string.length) {
-      const glyph = this._getGlyph(string[0])
+      // Add a glyph to each branch of the previous glyph.
+      for (const branch of prevGlyph.branches) {
+        const glyph = this._createGlyph(string[0])
+        glyph.alignAtBranch(branch)
 
-      // Add a glyph item to the trunk and each branch of the previous glyph
-      // item.
-      for (const child of prevGlyphItem.children) {
-        const glyphItem = glyph.createGlyphItem()
+        this._adjustTrunk()
 
-        const tangentOut = child.lastCurve.getTangentAt(child.lastCurve.length)
-        const tangentIn = glyphItem.firstChild.firstCurve.getTangentAt(0)
-        // First, rotate the glyph item so it points in the same direction as
-        // the child.
-        glyphItem.rotate(tangentOut.angle + 90)
-        // Not all glyphs start with a straight trunk. If the trunk is curved we
-        // compensate for it's starting angle, so the connection between the
-        // child and the glyph is smooth.
-        glyphItem.rotate((tangentIn.angle + 90) * -1)
-
-        // Position the glyph item at the child's end point.
-        glyphItem.position = child.lastSegment.point
-
-        // The glyph item is not allowed to cross the tree (meaning the already
-        // existing glyph items). If it crosses, we remove it and stop the
-        // growing.
-        if (this._crossesGlyphItem(glyphItem)) {
-          glyphItem.remove()
+        if (this._crossesGlyph(glyph)) {
+          glyph.remove()
         } else {
-          glyphItems.addChild(glyphItem)
-          this._growRecursive(glyphItem, string.slice(1))
+          const { lowestGlyph } = this
+          this.lowestGlyph =
+            !lowestGlyph || glyph.isLowerThan(lowestGlyph) ? glyph : lowestGlyph
+
+          this._addGlyph(glyph)
+          this._growRecursive(glyph, string.slice(1))
         }
       }
     }
@@ -74,25 +71,63 @@ export class WordTree {
    * @param {string} char - The character.
    * @returns {Branches.Glyph}
    */
-  _getGlyph(char) {
-    const glyph = this.font.glyphs.get(char.charCodeAt(0))
-    if (!glyph) {
-      throw new Error(`Couldn't find glyph for char '${char}'`)
+  _createGlyph(char) {
+    const definition = this.font.glyphDefinitions.get(char.charCodeAt(0))
+    if (!definition) {
+      throw new Error(`Couldn't find glyph definition for char '${char}'`)
     }
-    return glyph
+    return definition.instance()
   }
 
-  _crossesGlyphItem(glyphItem) {
-    const glyphItemA = glyphItem
-    for (const childA of glyphItemA.children) {
-      for (const glyphItemB of this.glyphItems.children) {
-        for (const childB of glyphItemB.children) {
-          if (childA.getCrossings(childB).length) {
+  /**
+   * Add glyph and it's item.
+   * @private
+   * @param {Branches.Glyph} glyph
+   */
+  _addGlyph(glyph) {
+    this.glyphs.push(glyph)
+    this.item.addChild(glyph.item)
+  }
+
+  _adjustTrunk() {
+    const { lowestGlyph, branchBottomDistance } = this
+    if (lowestGlyph) {
+      const firstGlyph = this.glyphs[0]
+      const distance =
+        this.lowestGlyph.item.bounds.bottomLeft.y - firstGlyph.position.y
+      if (distance > branchBottomDistance * -1) {
+        firstGlyph.trunk.insert(0, firstGlyph.trunk.firstSegment)
+        firstGlyph.trunk.firstSegment.point.y += distance + branchBottomDistance
+        firstGlyph.item.pivot = firstGlyph.trunk.firstSegment.point
+      }
+    }
+  }
+
+  /**
+   * Check if a glyph crosses this tree.
+   * @private
+   * @param {Branches.Glyph} glyph
+   * @returns {boolean} – Wether or not the glyph crosses.
+   */
+  _crossesGlyph(glyph) {
+    const { glyphs } = this
+    for (let i = 0; i < glyphs.length; i++) {
+      for (const branchA of glyph.branches) {
+        for (const branchB of glyphs[i].branches) {
+          if (branchA.getCrossings(branchB).length) {
             return true
           }
         }
       }
     }
     return false
+  }
+
+  set position(value) {
+    this.item.position = value
+  }
+
+  get position() {
+    return this.item.position
   }
 }

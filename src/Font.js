@@ -1,17 +1,17 @@
 import aglfn from 'aglfn'
-import { Glyph } from './Glyph'
+import { GlyphDefinition } from './GlyphDefinition'
 import { loadSVG } from './utils'
 
 /**
  * @typedef {Object} FontInfo
- * @property {Map} glyphs - The glyphs.
+ * @property {Map} glyphDefinitions - The glyph definitions.
  */
 
 export class Font {
   constructor() {
     this.url = null
     this.item = null
-    this.glyphs = new Map()
+    this.glyphDefinitions = new Map()
   }
 
   /**
@@ -21,8 +21,8 @@ export class Font {
   // TODO accept item directly.
   async load(url) {
     this.item = await loadSVG(url, { insert: false })
-    const { glyphs } = this.parse(this.item)
-    this.glyphs = glyphs
+    const { glyphDefinitions } = this.parse(this.item)
+    this.glyphDefinitions = glyphDefinitions
   }
 
   /**
@@ -31,7 +31,7 @@ export class Font {
    * @returns {FontInfo}
    */
   parse(item) {
-    const glyphs = new Map()
+    const glyphDefinitions = new Map()
 
     const children = item.children
     for (const child of children) {
@@ -40,11 +40,11 @@ export class Font {
         const { unicodeValue } = aglfn.find(el => el.glyphName === name) || {}
         if (unicodeValue) {
           const charCode = parseInt(`0x${unicodeValue}`)
-          glyphs.set(charCode, new Glyph(child))
+          glyphDefinitions.set(charCode, new GlyphDefinition(child))
         }
       }
     }
 
-    return { glyphs }
+    return { glyphDefinitions }
   }
 }
