@@ -7,7 +7,10 @@ async function main() {
   const font = new Font()
   await font.load(require('../src/branches.svg'))
 
-  const tree = new WordTree({ font })
+  const tree = new WordTree({
+    font,
+    growingOrder: 'left-right'
+  })
   let string = ''
   document.addEventListener('keydown', ({ key }) => {
     if (key.length === 1 && key.match(/[a-z]/)) {

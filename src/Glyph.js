@@ -1,4 +1,5 @@
 import { project } from 'paper'
+import { shuffleArray } from './utils'
 
 export class Glyph {
   /**
@@ -35,6 +36,31 @@ export class Glyph {
 
   isLowerThan(glyph) {
     return this.item.bounds.bottomLeft.y > glyph.item.bounds.bottomLeft.y
+  }
+
+  /**
+   * Sort the branches of the glyph.
+   * @param {GrowingOrder} order - The sorting order.
+   * @returns {Array<paper.Path>}
+   */
+  sortBranches(order) {
+    const branches = [...this.branches]
+    const stortings = {
+      natural: array => array,
+      'left-right': array =>
+        array.sort((a, b) => a.lastSegment.point.x - b.lastSegment.point.x),
+      'right-left': array =>
+        array.sort((a, b) => b.lastSegment.point.x - a.lastSegment.point.x),
+      random: array => shuffleArray(array)
+    }
+
+    // Sort the branches and move the trunk to the beginning, if necessary.
+    const sorted = stortings[order](branches)
+    if (this.startAtTrunk) {
+      const index = sorted.indexOf(glyph.trunk)
+      sorted.unshift(sorted.splice(index, 1)[0])
+    }
+    return sorted
   }
 
   /**

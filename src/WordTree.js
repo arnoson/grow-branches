@@ -1,15 +1,33 @@
 import { Group, view } from 'paper'
 
+/**
+ * @typedef {'natural', 'left-right', 'right-left', 'random'} GrowingOrder
+ */
+
 export class WordTree {
   /**
-   * @param {Object} param
-   * @param {Branches.Font} font – The font.
-   * @param {string} [word] - The word to grow.
+   * @param {object} param
+   * @param {Branches.Font} param.font – The font.
+   * @param {string} [param.word] - The word to grow.
+   * @param {number} [param.branchBottomDistance] - The minimum distance between
+   * the lowest branch and the bottom.
+   * @param {GrowingOrder} [param.growingOrder] – The order in which the
+   * branches grow.
+   * @param {boolean} [param.startAtTrunk] - Wether or not to start growing
+   * branches at the trunk.
    */
-  constructor({ font, word = null, branchBottomDistance = 30 }) {
+  constructor({
+    font,
+    word = null,
+    branchBottomDistance = 30,
+    growingOrder = 'natural',
+    startAtTrunk = true
+  }) {
     this.word = word
     this.font = font
     this.branchBottomDistance = branchBottomDistance
+    this.growingOrder = growingOrder
+    this.startAtTrunk = startAtTrunk
     this.glyphs = []
     this.lowestGlyph = null
     this.item = new Group()
@@ -24,6 +42,7 @@ export class WordTree {
     const glyph = this._createGlyph(string[0])
     this._addGlyph(glyph)
     this._growRecursive(glyph, string.slice(1))
+    this._adjustTrunk()
     this.item.pivot = glyph.item.pivot
   }
 
@@ -45,7 +64,8 @@ export class WordTree {
     // Only keep growing if we have characters left.
     if (string.length) {
       // Add a glyph to each branch of the previous glyph.
-      for (const branch of prevGlyph.branches) {
+      const branches = prevGlyph.sortBranches(this.growingOrder)
+      for (const branch of branches) {
         const glyph = this._createGlyph(string[0])
         glyph.alignAtBranch(branch)
 
@@ -80,27 +100,13 @@ export class WordTree {
   }
 
   /**
-   * Add glyph and it's item.
+   * Add a glyph and it's item.
    * @private
    * @param {Branches.Glyph} glyph
    */
   _addGlyph(glyph) {
     this.glyphs.push(glyph)
     this.item.addChild(glyph.item)
-  }
-
-  _adjustTrunk() {
-    const { lowestGlyph, branchBottomDistance } = this
-    if (lowestGlyph) {
-      const firstGlyph = this.glyphs[0]
-      const distance =
-        this.lowestGlyph.item.bounds.bottomLeft.y - firstGlyph.position.y
-      if (distance > branchBottomDistance * -1) {
-        firstGlyph.trunk.insert(0, firstGlyph.trunk.firstSegment)
-        firstGlyph.trunk.firstSegment.point.y += distance + branchBottomDistance
-        firstGlyph.item.pivot = firstGlyph.trunk.firstSegment.point
-      }
-    }
   }
 
   /**
@@ -132,6 +138,24 @@ export class WordTree {
       }
     }
     return false
+  }
+
+  /**
+   * Extend the trunk, so that the lowest branch doesn't touch the ground.
+   */
+  _adjustTrunk() {
+    const { lowestGlyph, branchBottomDistance } = this
+    if (lowestGlyph) {
+      const firstGlyph = this.glyphs[0]
+      const distance =
+        this.lowestGlyph.item.bounds.bottomLeft.y - firstGlyph.position.y
+      if (distance > branchBottomDistance * -1) {
+        const { trunk } = firstGlyph
+        trunk.insert(0, trunk.firstSegment)
+        trunk.firstSegment.point.y += distance + branchBottomDistance
+        firstGlyph.item.pivot = trunk.firstSegment.point
+      }
+    }
   }
 
   set position(value) {
