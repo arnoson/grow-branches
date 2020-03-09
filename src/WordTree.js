@@ -1,10 +1,11 @@
 import { Group, view } from 'paper'
+import { Tree } from './Tree'
 
 /**
  * @typedef {'natural', 'left-right', 'right-left', 'random'} GrowingOrder
  */
 
-export class WordTree {
+export class WordTree extends Tree {
   /**
    * @param {object} param
    * @param {Branches.Font} param.font – The font.
@@ -23,6 +24,7 @@ export class WordTree {
     growingOrder = 'natural',
     startAtTrunk = true
   }) {
+    super()
     this.word = word
     this.font = font
     this.branchBottomDistance = branchBottomDistance
@@ -30,7 +32,6 @@ export class WordTree {
     this.startAtTrunk = startAtTrunk
     this.glyphs = []
     this.lowestGlyph = null
-    this.item = new Group()
     word && this.grow(word)
   }
 
@@ -45,6 +46,7 @@ export class WordTree {
     this._growRecursive(glyph, string.slice(1))
     this._adjustTrunk()
     this.item.pivot = glyph.item.pivot
+    this._update()
   }
 
   chop() {
@@ -168,13 +170,5 @@ export class WordTree {
         firstGlyph.item.pivot = trunk.firstSegment.point
       }
     }
-  }
-
-  set position(value) {
-    this.item.position = value
-  }
-
-  get position() {
-    return this.item.position
   }
 }
