@@ -118,6 +118,14 @@ export class WordTree {
   _crossesGlyph(glyph) {
     const { glyphs } = this
     for (let i = 0; i < glyphs.length; i++) {
+      // TODO find good thresholds.
+      if (
+        Math.abs(glyphs[i].position.x - glyph.position.x) > 100 &&
+        Math.abs(glyphs[i].position.y - glyph.position.y) > 100
+      ) {
+        continue
+      }
+
       for (const branchA of glyph.branches) {
         for (const branchB of glyphs[i].branches) {
           // Get intersections, but exclude the trunk's starting point, because
