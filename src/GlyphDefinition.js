@@ -10,7 +10,7 @@ export class GlyphDefinition {
   }
 
   /**
-   * Return a new instance.
+   * Create a new instance.
    * @returns {Branches.Glyph}
    */
   instance() {

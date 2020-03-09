@@ -46,9 +46,11 @@ export class WordTree extends Tree {
     this._growRecursive(glyph, string.slice(1))
     this._adjustTrunk()
     this.item.pivot = glyph.item.pivot
-    this._update()
   }
 
+  /**
+   * Remove all glyphs.
+   */
   chop() {
     for (const glyph of this.glyphs) {
       glyph.remove()

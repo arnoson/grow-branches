@@ -20,21 +20,27 @@ export class Glyph {
    * @param {paper.Path} branch
    */
   alignAtBranch(branch) {
-    // Rotate the glyph so it's trunk starts growing vertical.
     this.alignVertical()
     const { item } = this
-    // Now rotate this glyph so it points in the same direction as the branch.
+    // Now rotate the glyph so it points in the same direction as the branch.
     const tangentOut = branch.lastCurve.getTangentAt(branch.lastCurve.length)
     item.rotate(tangentOut.angle + 90)
 
-    // Position the glyph item at the child's end point.
+    // Position the glyph at the branch's end point.
     item.position = branch.lastSegment.point
   }
 
+  /**
+   * Rotate the glyph so it's trunk starts growing vertically.
+   */
   alignVertical() {
     this.item.rotate((this.angleIn + 90) * -1)
   }
 
+  /**
+   * Check if the glyph is 'hanging' lower than the specified glyph.
+   * @param {Branches.Glyph} glyph
+   */
   isLowerThan(glyph) {
     return this.item.bounds.bottomLeft.y > glyph.item.bounds.bottomLeft.y
   }
@@ -42,8 +48,8 @@ export class Glyph {
   /**
    * Sort the branches of the glyph.
    * @param {GrowingOrder} order - The sorting order.
-   * @param {boolean} order - Wether or not to start growing branches at the
-   * trunk.
+   * @param {boolean} startAtTrunk - Wether or not to start growing branches at
+   * the trunk.
    * @returns {Array<paper.Path>}
    */
   sortBranches(order, startAtTrunk) {

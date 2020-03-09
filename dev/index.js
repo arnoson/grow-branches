@@ -9,33 +9,37 @@ async function main() {
 
   const tree = new SentenceTree({
     font,
+    words: ['arno', 'tested', 'das', 'system'],
     wordOptions: {
       growingOrder: 'left-right',
       startAtTrunk: false
     }
   })
 
+  tree.position = paper.view.center
+
   let string = ''
   document.addEventListener('keydown', event => {
     const { key } = event
+
+    let grow = false
+
     if (key.length === 1 && key.match(/[a-z\s]/)) {
       string += key
       tree.chop()
+      grow = true
     } else if (key === 'Backspace') {
       event.preventDefault()
       string = string.slice(0, -1)
       tree.chop()
+      grow = true
     }
 
-    if (string.length) {
-      tree.grow(string.split(' '))
+    if (grow && string.length) {
+      tree.grow(string.trim().split(' '))
     }
 
     tree.position = paper.view.center
-    tree.item.style = {
-      strokeWidth: 5,
-      strokeColor: 'rgba(0, 0, 255, 0.5)'
-    }
   })
 }
 main()

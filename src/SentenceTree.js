@@ -3,6 +3,11 @@ import { Tree } from './Tree'
 import { WordTree } from './WordTree'
 
 export class SentenceTree extends Tree {
+  /**
+   * @param {object} param
+   * @param {Branches.Font} font
+   * @param {object} wordOptions
+   */
   constructor({ font, words = [], wordOptions }) {
     super()
     this.font = font
@@ -12,14 +17,17 @@ export class SentenceTree extends Tree {
     words.length && this.grow(words)
   }
 
+  /**
+   * Grow words.
+   * @param {Array<string>} words
+   */
   grow(words) {
-    const { font } = this
-    let prevTree = null
+    const { font, trees } = this
+    let prevTree = trees[trees.length - 1]
     for (const word of words) {
       const tree = new WordTree({ font, word, ...this.wordOptions })
       if (prevTree) {
-        tree.alignAfter(prevTree)
-        tree.kern(prevTree)
+        tree.alignAfter(this)
       }
       this._addTree(tree)
       prevTree = tree
