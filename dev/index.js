@@ -9,15 +9,20 @@ async function main() {
 
   const tree = new WordTree({
     font,
-    growingOrder: 'left-right'
+    word: 'hallo',
+    growingOrder: 'left-right',
+    startAtTrunk: false
   })
+  tree.position = paper.view.bounds.bottomCenter
   let string = ''
-  document.addEventListener('keydown', ({ key }) => {
+  document.addEventListener('keydown', event => {
+    const { key } = event
     if (key.length === 1 && key.match(/[a-z]/)) {
       string += key
       tree.chop()
       tree.grow(string)
     } else if (key === 'Backspace') {
+      event.preventDefault()
       string = string.slice(0, -1)
       tree.chop()
       if (string.length) {

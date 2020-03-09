@@ -20,18 +20,19 @@ export class Glyph {
    * @param {paper.Path} branch
    */
   alignAtBranch(branch) {
+    // Rotate the glyph so it's trunk starts growing vertical.
+    this.alignVertical()
     const { item } = this
-    // First, rotate this glyph so it points in the same direction as
-    // the branch.
+    // Now rotate this glyph so it points in the same direction as the branch.
     const tangentOut = branch.lastCurve.getTangentAt(branch.lastCurve.length)
     item.rotate(tangentOut.angle + 90)
-    // Not all glyphs start with a straight trunk. If the trunk is curved we
-    // compensate for it's starting angle, so the connection between the
-    // child and the glyph is smooth.
-    item.rotate((this.angleIn + 90) * -1)
 
     // Position the glyph item at the child's end point.
     item.position = branch.lastSegment.point
+  }
+
+  alignVertical() {
+    this.item.rotate((this.angleIn + 90) * -1)
   }
 
   isLowerThan(glyph) {
@@ -41,9 +42,11 @@ export class Glyph {
   /**
    * Sort the branches of the glyph.
    * @param {GrowingOrder} order - The sorting order.
+   * @param {boolean} order - Wether or not to start growing branches at the
+   * trunk.
    * @returns {Array<paper.Path>}
    */
-  sortBranches(order) {
+  sortBranches(order, startAtTrunk) {
     const branches = [...this.branches]
     const stortings = {
       natural: array => array,
@@ -56,8 +59,8 @@ export class Glyph {
 
     // Sort the branches and move the trunk to the beginning, if necessary.
     const sorted = stortings[order](branches)
-    if (this.startAtTrunk) {
-      const index = sorted.indexOf(glyph.trunk)
+    if (startAtTrunk) {
+      const index = sorted.indexOf(this.trunk)
       sorted.unshift(sorted.splice(index, 1)[0])
     }
     return sorted

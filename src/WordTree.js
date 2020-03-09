@@ -40,6 +40,7 @@ export class WordTree {
    */
   grow(string) {
     const glyph = this._createGlyph(string[0])
+    glyph.alignVertical()
     this._addGlyph(glyph)
     this._growRecursive(glyph, string.slice(1))
     this._adjustTrunk()
@@ -64,7 +65,10 @@ export class WordTree {
     // Only keep growing if we have characters left.
     if (string.length) {
       // Add a glyph to each branch of the previous glyph.
-      const branches = prevGlyph.sortBranches(this.growingOrder)
+      const branches = prevGlyph.sortBranches(
+        this.growingOrder,
+        this.startAtTrunk
+      )
       for (const branch of branches) {
         const glyph = this._createGlyph(string[0])
         glyph.alignAtBranch(branch)
