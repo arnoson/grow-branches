@@ -9,7 +9,7 @@ async function main() {
 
   const tree = new SentenceTree({
     font,
-    words: ['arno', 'tested', 'das', 'system'],
+    words: ['arno', 'tested', 'das'],
     wordOptions: {
       growingOrder: 'left-right',
       startAtTrunk: false

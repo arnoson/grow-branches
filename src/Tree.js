@@ -1,5 +1,5 @@
-import { KerningInfo } from './KerningInfo'
-import { view, Group } from 'paper'
+import { Group } from 'paper'
+import { Kerner } from './Kerner'
 
 export class Tree {
   /**
@@ -12,15 +12,15 @@ export class Tree {
     this.kerningResolution = kerningResolution
     this.charSpacing = 10
     this.item = new Group()
+    this.kerner = new Kerner()
   }
 
   /**
    * Align (and kern) this tree after the specified tree.
-   * @param {Branches.Tree} tree – The tree to be aligned after.
+   * @param {paper.Item} item – The item to be aligned after.
    */
-  alignAfter(tree) {
-    this.item.bounds.bottomLeft = tree.item.bounds.bottomRight
-    this._kern(tree)
+  alignAfter(item) {
+    this.kerner.kern(this.item, item)
   }
 
   /**
@@ -47,53 +47,75 @@ export class Tree {
    * @private
    * @param {Branches.Tree} tree
    */
-  _addTree(tree) {
+  _addChildTree(tree) {
     this.trees.push(tree)
     this.item.addChild(tree.item)
   }
 
-  /**
-   * Place a this tree next to the specified tree and move as close as possible
-   * without the two trees crossing. Note: for performance reasons kerning uses
-   * a raster internally and not paper.js' getIntersections method.
-   * @private
-   * @param {Branches.Tree} tree – The tree to kern with.
-   */
-  _kern(tree) {
-    const { height: heightA, edges: edgesA } = new KerningInfo(tree)
-    const { height: heightB, edges: edgesB } = new KerningInfo(this)
+  _alignChildTrees() {
+    const { item, trees } = this
+    const { a, center, b } = this._divideTrees(trees)
 
-    // Loop through each row of pixels and calculate how much distance is
-    // between the two trees at the given row. The smallest distance we measure
-    // is how far we can push the trees into each other without them
-    // overlapping.
-    // We assume the trees are aligned at the bottom, so we iterate the rows
-    // in descending order.
-    const height = Math.min(heightA, heightB)
-    let minDistance = null
-    for (let i = 0; i < height; i++) {
-      const edgeRight = edgesA.right
-      const edgeLeft = edgesB.left
-      const distance =
-        edgeRight[edgeRight.length - 1 - i] + edgeLeft[edgeLeft.length - 1 - i]
-      if (minDistance === null || distance < minDistance) {
-        minDistance = distance
+    let i = 0
+    const alignTreesInGroup = trees => {
+      const group = new Group()
+      for (const tree of trees) {
+        group.children.length && tree.alignAfter(group)
+        group.addChild(tree.item)
       }
+      group.strokeColor = i++ === 0 ? 'red' : 'blue'
+      return group
     }
 
-    const { kerningResolution } = this
-    // Compensate irregular gaps between the trees (caused by low resolution
-    // rasters). The value 20 is empirical.
-    if (minDistance > 0) {
-      minDistance += 20 / kerningResolution
+    const itemA = item.addChild(alignTreesInGroup(a))
+    const itemB = item.addChild(alignTreesInGroup(b))
+
+    itemA.rotate(-90)
+    itemB.rotate(90)
+  }
+
+  /**
+   * Divide trees in two groups and a center tree.
+   * @param {Array<Branches.Tree>} trees
+   */
+  _divideTrees(trees) {
+    const a = []
+    const b = []
+    let center
+
+    if (trees.length === 1) {
+      // If there is only one tree, we will place it at the center.
+      center = trees[0]
+    } else if (trees.length === 2) {
+      // We always want a center tree, so two trees are divided into group a
+      // and center.
+      a.push(trees[0])
+      center = trees[1]
+    } else if (trees.length === 3) {
+      // Three trees get divided one in each group.
+      a.push(trees[0])
+      center = trees[1]
+      b.push(trees[2])
+    } else {
+      // If there are more than three trees, we first make two equally sized
+      // groups, based on the width of the trees.
+      const reduceTotalWidth = (acc, tree) => acc + tree.item.bounds.width
+      const halfWidth = trees.reduce(reduceTotalWidth, 0) / 2
+
+      let width = 0
+      for (const tree of trees) {
+        width += tree.bounds.size.width
+        const side = width < halfWidth ? a : b
+        side.push(tree)
+      }
+
+      // Now we pick the center tree from the bigger group.
+      const widthA = a.reduce(reduceTotalWidth, 0)
+      const widthB = b.reduce(reduceTotalWidth, 0)
+      center = widthA > widthB ? a.pop() : b.shift()
     }
 
-    // We calculated the minimal distance in the lower kerning resolution. So we
-    // have to transform it in into view resolution.
-    const kerning = minDistance * (view.resolution / kerningResolution)
-    // Apply the kerning and make sure that there is 'char' spacing between the
-    // trees.
-    this.position.x -= kerning - this.charSpacing
+    return { a, center, b }
   }
 
   get position() {

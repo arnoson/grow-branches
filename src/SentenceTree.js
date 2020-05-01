@@ -22,15 +22,13 @@ export class SentenceTree extends Tree {
    * @param {Array<string>} words
    */
   grow(words) {
-    const { font, trees } = this
-    let prevTree = trees[trees.length - 1]
+    const { font } = this
+
     for (const word of words) {
       const tree = new WordTree({ font, word, ...this.wordOptions })
-      if (prevTree) {
-        tree.alignAfter(this)
-      }
-      this._addTree(tree)
-      prevTree = tree
+      this._addChildTree(tree)
     }
+
+    this._alignChildTrees()
   }
 }
