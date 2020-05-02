@@ -1,6 +1,15 @@
+/**
+ * @typedef {Object} KerningInfo
+ * @property {paper.Raster} raster - The rasterized item.
+ * @property {number} width - The raster's width.
+ * @property {number} height - The raster's height.
+ * @property {number} resolution - The items's resolution.
+ * @property {Object} edges - The raster's left and right edge.
+ */
+
 export class Kerner {
   /**
-   * @param {object} [param]
+   * @param {Object} [param]
    * @param {number} [param.resolution] – The resolution in which the items will
    * be rasterized.
    * @param {number} [param.spacing] – The space between two kerned items in px.
@@ -22,6 +31,12 @@ export class Kerner {
     this.isLeftToRight = writingMode === 'left-to-right'
   }
 
+  /**
+   * Get kerning information for the provided item.
+   * @private
+   * @param {paper.Iten} item
+   * @returns {KerningInfo}
+   */
   _getKerningInfo(item) {
     // If stroke width ist too thin, some paths might get lost in rasterization.
     // 1px width works with 72 dpi, so we increase the strokeWidth as the
@@ -43,7 +58,7 @@ export class Kerner {
   }
 
   /**
-   * Place item a next to item b and move as close as possible without the two
+   * Place itemA next to itemB and move as close as possible without the two
    * items colliding. For performance reasons we use a raster instead of
    * paper.js' getIntersections method.
    * @private
