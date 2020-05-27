@@ -26,9 +26,9 @@ export class SentenceTree extends Tree {
 
     for (const word of words) {
       const tree = new WordTree({ font, word, ...this.wordOptions })
-      this._addChildTree(tree)
+      this._addTree(tree)
     }
 
-    this._alignChildTrees()
+    this._alignTrees()
   }
 }

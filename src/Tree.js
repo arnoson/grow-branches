@@ -1,4 +1,4 @@
-import { Group } from 'paper'
+import { Group, Path } from 'paper'
 import { Kerner } from './Kerner'
 
 export class Tree {
@@ -8,11 +8,22 @@ export class Tree {
    * used in kerning. A higher value will result in more accurat kerning, but
    * will also take more time to kern.
    */
-  constructor({ kerningResolution = 20 } = {}) {
+  constructor({ kerningResolution = 20, charSpacing = 10 } = {}) {
     this.kerningResolution = kerningResolution
-    this.charSpacing = 10
-    this.item = new Group()
+    this.charSpacing = charSpacing
+
     this.kerner = new Kerner()
+    this.trees = []
+
+    const item = (this.item = new Group())
+    this.trunk = item.addChild(new Path({ name: 'trunk', strokeColor: 'blue' }))
+
+    this.sideLeft = item.addChild(
+      new Group({ name: 'side left', applyMatrix: false, rotation: -90 })
+    )
+    this.sideRight = item.addChild(
+      new Group({ name: 'side right', applyMatrix: false, rotation: 90 })
+    )
   }
 
   /**
@@ -47,75 +58,103 @@ export class Tree {
    * @private
    * @param {Branches.Tree} tree
    */
-  _addChildTree(tree) {
+  _addTree(tree) {
     this.trees.push(tree)
+    this.kerner.kern(tree.item, this.item)
     this.item.addChild(tree.item)
   }
 
-  _alignChildTrees() {
-    const { item, trees } = this
-    const { a, center, b } = this._divideTrees(trees)
-
-    let i = 0
-    const alignTreesInGroup = trees => {
-      const group = new Group()
-      for (const tree of trees) {
-        group.children.length && tree.alignAfter(group)
-        group.addChild(tree.item)
-      }
-      group.strokeColor = i++ === 0 ? 'red' : 'blue'
-      return group
-    }
-
-    const itemA = item.addChild(alignTreesInGroup(a))
-    const itemB = item.addChild(alignTreesInGroup(b))
-
-    itemA.rotate(-90)
-    itemB.rotate(90)
-  }
-
   /**
-   * Divide trees in two groups and a center tree.
-   * @param {Array<Branches.Tree>} trees
+   * Distribute the trees into left and right side.
+   * @private
+   * @returns {Object} – An object containing the distributed trees.
    */
-  _divideTrees(trees) {
-    const a = []
-    const b = []
+  _distributeTrees() {
+    const { item, trees } = this
+
     let center
+    const left = []
+    const right = []
 
     if (trees.length === 1) {
       // If there is only one tree, we will place it at the center.
       center = trees[0]
     } else if (trees.length === 2) {
-      // We always want a center tree, so two trees are divided into group a
+      // We always want a center tree, so two trees are divided into left group
       // and center.
-      a.push(trees[0])
+      left.push(trees[0])
       center = trees[1]
     } else if (trees.length === 3) {
       // Three trees get divided one in each group.
-      a.push(trees[0])
+      left.push(trees[0])
       center = trees[1]
-      b.push(trees[2])
+      right.push(trees[2])
     } else {
-      // If there are more than three trees, we first make two equally sized
-      // groups, based on the width of the trees.
-      const reduceTotalWidth = (acc, tree) => acc + tree.item.bounds.width
-      const halfWidth = trees.reduce(reduceTotalWidth, 0) / 2
-
-      let width = 0
+      // If there are more than three trees, we divide them in the center.
+      const threshold = item.bounds.center.x
       for (const tree of trees) {
-        width += tree.bounds.size.width
-        const side = width < halfWidth ? a : b
+        const side = tree.position.x < threshold ? left : right
         side.push(tree)
       }
-
-      // Now we pick the center tree from the bigger group.
-      const widthA = a.reduce(reduceTotalWidth, 0)
-      const widthB = b.reduce(reduceTotalWidth, 0)
-      center = widthA > widthB ? a.pop() : b.shift()
+      // Then we pick the smaller of the two outer trees as the center tree.
+      // Most of the time this just looks best.
+      center =
+        left[left.length - 1].item.bounds.width < right[0].item.bounds.width
+          ? left.pop()
+          : right.shift()
     }
 
-    return { a, center, b }
+    return { left, center, right }
+  }
+
+  /**
+   * @private
+   * @param {Array<Branches.Tree>} trees
+   */
+  _getTreesWidth(trees) {
+    return trees[trees.length - 1].item.bounds.x - trees[0].item.bounds.x
+  }
+
+  /**
+   * Distribute the trees into left and right side an the center tree and align
+   * them around the trunk.
+   * @private
+   */
+  _alignTrees() {
+    const { sideLeft, sideRight } = this
+    const { left, center, right } = this._distributeTrees()
+
+    sideLeft.removeChildren()
+    sideLeft.addChildren(left.map(tree => tree.item))
+
+    sideRight.removeChildren()
+    sideRight.addChildren(right.map(tree => tree.item))
+
+    const [smallerSide, biggerSide] =
+      sideLeft.bounds.height < sideRight.bounds.height
+        ? [sideLeft, sideRight]
+        : [sideRight, sideLeft]
+
+    const maxHeight = biggerSide.bounds.height
+
+    // 'Stretch' the smaller side so it fits to the bigger side. We don't
+    // actually stretch the trees, but their positions.
+    const stretchFactor = maxHeight / smallerSide.bounds.height
+    for (const item of smallerSide.children) {
+      item.position.x *= stretchFactor
+    }
+
+    // Adjust trunk.
+    const { trunk } = this
+    trunk.segments = [
+      [0, 0],
+      [0, maxHeight]
+    ]
+
+    // Align both sides and the center tree around the trunk.
+    sideLeft.bounds.rightCenter = trunk.bounds.leftCenter
+    sideRight.bounds.leftCenter = trunk.bounds.rightCenter
+    center.item.position = trunk.bounds.topCenter
   }
 
   get position() {
