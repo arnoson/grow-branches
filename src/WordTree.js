@@ -1,38 +1,33 @@
-import { Group, view } from 'paper'
-import { Tree } from './Tree'
+import { BaseTree } from './BaseTree'
 
 /**
  * @typedef {'natural', 'left-right', 'right-left', 'random'} GrowingOrder
  */
 
-export class WordTree extends Tree {
+export class WordTree extends BaseTree {
   /**
-   * @param {object} param
-   * @param {Branches.Font} param.font – The font.
-   * @param {string} [param.word] - The word to grow.
-   * @param {number} [param.branchBottomDistance] - The minimum distance between
-   * the lowest branch and the bottom.
-   * @param {GrowingOrder} [param.growingOrder] – The order in which the
+   * @param {object} options
+   * @param {Branches.Font} options.font – The font.
+   * @param {number} [options.branchBottomDistance] - The minimum distance
+   * between the lowest branch and the bottom.
+   * @param {GrowingOrder} [options.growingOrder] – The order in which the
    * branches grow.
-   * @param {boolean} [param.startAtTrunk] - Wether or not to start growing
+   * @param {boolean} [options.startAtTrunk] - Wether or not to start growing
    * branches at the trunk.
    */
   constructor({
     font,
-    word = null,
     branchBottomDistance = 30,
     growingOrder = 'natural',
     startAtTrunk = true
   }) {
     super()
-    this.word = word
     this.font = font
     this.branchBottomDistance = branchBottomDistance
     this.growingOrder = growingOrder
     this.startAtTrunk = startAtTrunk
     this.glyphs = []
     this.lowestGlyph = null
-    word && this.grow(word)
   }
 
   /**

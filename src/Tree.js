@@ -1,37 +1,52 @@
-import { Group, Path } from 'paper'
+import { Group } from 'paper'
 import { Kerner } from './Kerner'
+import { BaseTree } from './BaseTree'
+import { WordTree } from './WordTree'
 
-export class Tree {
+/**
+ * An array of either arrays or words. Each array will be a new Tree and each
+ * word a WordTree.
+ * @example
+ * // This describes a tree consisting of two trees, each of them consisting of
+ * // two word trees.
+ * const content = [
+ *    ['test', 'one],
+ *    ['test', 'two']
+ * ]
+ * @typedef {Array} BranchesContent
+ */
+
+export class Tree extends BaseTree {
   /**
-   * @param {object} param
-   * @param {number} [kerningResolution] - The resolution for the rasterization
-   * used in kerning. A higher value will result in more accurat kerning, but
-   * will also take more time to kern.
+   * @param {object} [options] - The options.
    */
-  constructor({ kerningResolution = 20, charSpacing = 10 } = {}) {
-    this.kerningResolution = kerningResolution
-    this.charSpacing = charSpacing
-
+  constructor(options = {}) {
+    super()
+    this.options = options
     this.kerner = new Kerner()
     this.trees = []
 
-    const item = (this.item = new Group())
-    this.trunk = item.addChild(new Path({ name: 'trunk', strokeColor: 'blue' }))
-
-    this.sideLeft = item.addChild(
+    this.sideLeft = this.item.addChild(
       new Group({ name: 'side left', applyMatrix: false, rotation: -90 })
     )
-    this.sideRight = item.addChild(
+    this.sideRight = this.item.addChild(
       new Group({ name: 'side right', applyMatrix: false, rotation: 90 })
     )
   }
 
   /**
-   * Align (and kern) this tree after the specified tree.
-   * @param {paper.Item} item – The item to be aligned after.
+   * Grow child trees.
+   * @param {BranchesContent} content – The content.
    */
-  alignAfter(item) {
-    this.kerner.kern(this.item, item)
+  grow(content) {
+    for (const el of content) {
+      const Ctor = typeof el === 'string' ? WordTree : Tree
+      const tree = new Ctor(this.options)
+      tree.grow(el)
+      this._addTree(tree)
+    }
+    this._alignTrees()
+    this.item.pivot = this.trunk.lastSegment.point
   }
 
   /**
@@ -43,14 +58,6 @@ export class Tree {
     }
     this.item.removeChildren()
     this.trees = []
-  }
-
-  /**
-   * Remove this tree and all children.
-   */
-  remove() {
-    this.chop()
-    this.item.remove()
   }
 
   /**
@@ -97,8 +104,10 @@ export class Tree {
         side.push(tree)
       }
       // Then we pick the smaller of the two outer trees as the center tree.
-      // Most of the time this just looks best.
+      // Most of the time this just looks best. But we also make sure that there
+      // is at least one tree left on each side.
       center =
+        right.length === 1 ||
         left[left.length - 1].item.bounds.width < right[0].item.bounds.width
           ? left.pop()
           : right.shift()
@@ -148,28 +157,17 @@ export class Tree {
     const { trunk } = this
     trunk.segments = [
       [0, 0],
-      [0, maxHeight]
+      [0, maxHeight + 20]
     ]
 
-    // Align both sides and the center tree around the trunk.
-    sideLeft.bounds.rightCenter = trunk.bounds.leftCenter
-    sideRight.bounds.leftCenter = trunk.bounds.rightCenter
+    // Align both sides horizontally alongside the trunk ...
+    sideLeft.bounds.right = trunk.bounds.left
+    sideRight.bounds.left = trunk.bounds.right
+    // ... then align the bigger side to the top ...
+    biggerSide.bounds.top = trunk.bounds.top
+    // ... and vertically center the smaller side on the bigger side.
+    smallerSide.bounds.center.y = biggerSide.bounds.center.y
+    // Put the center tree on the top.
     center.item.position = trunk.bounds.topCenter
-  }
-
-  get position() {
-    return this.item.position
-  }
-
-  set position(value) {
-    this.item.position = value
-  }
-
-  get bounds() {
-    return this.item.bounds
-  }
-
-  set bounds(value) {
-    this.item.bounds = value
   }
 }

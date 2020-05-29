@@ -1,3 +1,4 @@
 export * from './Font'
 export * from './WordTree'
-export * from './SentenceTree'
+export * from './Tree'
+export * from './BaseTree'
