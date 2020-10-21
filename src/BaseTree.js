@@ -2,7 +2,7 @@ import { Group, Path } from 'paper'
 
 export class BaseTree {
   constructor() {
-    const item = (this.item = new Group())
+    const item = (this.item = new Group({ strokeScaling: false }))
     this.trunk = item.addChild(new Path({ name: 'trunk', strokeColor: 'blue' }))
   }
 

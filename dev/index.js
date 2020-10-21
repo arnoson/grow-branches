@@ -1,20 +1,18 @@
 import paper, { view } from 'paper'
-import { Font, WordTree } from '../src'
-import { Kerner } from '../src/Kerner'
+import { Font, Tree } from '../src'
 ;(async () => {
   paper.setup(document.querySelector('canvas'))
 
   const font = new Font()
   await font.load(require('../src/branches.svg'))
 
-  const treeA = new WordTree({ font })
-  treeA.grow('iiyll')
-  treeA.position = [100, 400]
+  const tree = new Tree({ font })
+  tree.grow(['grow', 'a', 'branches', 'now'])
 
-  const treeB = new WordTree({ font })
-  treeB.grow('hellow')
-  treeB.position = [300, 400]
+  console.log(tree.item)
 
-  const kerner = new Kerner({ debug: true })
-  kerner.kern(treeA.item, treeB.item)
+  tree.item.strokeScaling = false
+  tree.item.scale(0.5)
+  tree.item.strokeWidth = 10
+  tree.position = view.center
 })()

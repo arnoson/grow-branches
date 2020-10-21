@@ -23,7 +23,7 @@ export class Tree extends BaseTree {
   constructor(options = {}) {
     super()
     this.options = options
-    this.kerner = new Kerner({ debug: true })
+    this.kerner = new Kerner()
     this.trees = []
 
     this.sideLeft = this.item.addChild(
