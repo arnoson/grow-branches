@@ -23,7 +23,7 @@ export class Tree extends BaseTree {
   constructor(options = {}) {
     super()
     this.options = options
-    this.kerner = new Kerner()
+    this.kerner = new Kerner({ debug: true })
     this.trees = []
 
     this.sideLeft = this.item.addChild(
@@ -134,10 +134,10 @@ export class Tree extends BaseTree {
     const { left, center, right } = this._distributeTrees()
 
     sideLeft.removeChildren()
-    sideLeft.addChildren(left.map(tree => tree.item))
+    sideLeft.addChildren(left.map((tree) => tree.item))
 
     sideRight.removeChildren()
-    sideRight.addChildren(right.map(tree => tree.item))
+    sideRight.addChildren(right.map((tree) => tree.item))
 
     const [smallerSide, biggerSide] =
       sideLeft.bounds.height < sideRight.bounds.height

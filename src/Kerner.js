@@ -106,8 +106,10 @@ export class Kerner {
     }
 
     // We calculated the minimal distance using the kerning resolution, so we
-    // have to translate it into the item's view resolution.
-    const kerning = minDistance * (infoA.resolution / resolution)
+    // have to translate back to normal resolution.
+    // Note: We're using 72(dpi) because we want to scale the minimal distance
+    // value to screen density independent pixels, not to actually rendered pixels.
+    const kerning = minDistance * (72 / resolution)
     // Apply kerning and spacing to the item.
     itemA.position.x += (kerning - this.spacing) * (isLeftToRight ? -1 : 1)
 
