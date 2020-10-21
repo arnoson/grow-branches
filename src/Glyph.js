@@ -55,12 +55,12 @@ export class Glyph {
   sortBranches(order, startAtTrunk) {
     const branches = [...this.branches]
     const stortings = {
-      natural: array => array,
-      'left-right': array =>
+      natural: (array) => array,
+      'left-right': (array) =>
         array.sort((a, b) => a.lastSegment.point.x - b.lastSegment.point.x),
-      'right-left': array =>
+      'right-left': (array) =>
         array.sort((a, b) => b.lastSegment.point.x - a.lastSegment.point.x),
-      random: array => shuffleArray(array)
+      random: (array) => shuffleArray(array)
     }
 
     // Sort the branches and move the trunk to the beginning, if necessary.

@@ -7,12 +7,10 @@ import { Font, Tree } from '../src'
   await font.load(require('../src/branches.svg'))
 
   const tree = new Tree({ font })
-  tree.grow(['grow', 'a', 'branches', 'now'])
+  tree.grow(['a', 'a', 'a', 'a'])
 
-  console.log(tree.item)
+  console.log(tree.item.strokeScaling)
 
-  tree.item.strokeScaling = false
   tree.item.scale(0.5)
-  tree.item.strokeWidth = 10
   tree.position = view.center
 })()

@@ -6,7 +6,8 @@ export class GlyphDefinition {
    */
   constructor(item) {
     this.item = item
-    this.angleIn = this.item.firstChild.firstCurve.getTangentAt(0).angle
+    item.strokeScaling = false
+    this.angleIn = item.firstChild.firstCurve.getTangentAt(0).angle
   }
 
   /**
