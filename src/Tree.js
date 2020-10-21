@@ -100,15 +100,15 @@ export class Tree extends BaseTree {
       // If there are more than three trees, we divide them in the center.
       const threshold = item.bounds.center.x
       for (const tree of trees) {
-        const side = tree.position.x < threshold ? left : right
+        const side = tree.bounds.right < threshold ? left : right
         side.push(tree)
       }
-      // Then we pick the smaller of the two outer trees as the center tree.
+      // Then we pick the bigger of the two outer trees as the center tree.
       // Most of the time this just looks best. But we also make sure that there
       // is at least one tree left on each side.
       center =
         right.length === 1 ||
-        left[left.length - 1].item.bounds.width < right[0].item.bounds.width
+        left[left.length - 1].item.bounds.width > right[0].item.bounds.width
           ? left.pop()
           : right.shift()
     }
