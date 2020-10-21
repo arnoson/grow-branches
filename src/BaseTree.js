@@ -4,7 +4,9 @@ export class BaseTree {
   constructor() {
     const item = (this.item = new Group())
     item.data.fu = 'aha'
-    this.trunk = item.addChild(new Path({ name: 'trunk', strokeColor: 'blue' }))
+    this.trunk = item.addChild(
+      new Path({ name: 'trunk', strokeColor: 'blue', strokeScaling: false })
+    )
   }
 
   /**
