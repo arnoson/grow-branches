@@ -1,19 +1,9 @@
 import { BaseTree } from './BaseTree'
-
-/**
- * @typedef {'natural', 'left-right', 'right-left', 'random'} GrowingOrder
- */
+import './typedef'
 
 export class WordTree extends BaseTree {
   /**
-   * @param {object} options
-   * @param {Branches.Font} options.font – The font.
-   * @param {number} [options.branchBottomDistance] - The minimum distance
-   * between the lowest branch and the bottom.
-   * @param {GrowingOrder} [options.growingOrder] – The order in which the
-   * branches grow.
-   * @param {boolean} [options.startAtTrunk] - Wether or not to start growing
-   * branches at the trunk.
+   * @param {WordTreeOptions} options
    */
   constructor({
     font,
@@ -32,7 +22,7 @@ export class WordTree extends BaseTree {
 
   /**
    * Grow a word.
-   * @param {string} string – The word to grow.
+   * @param {string} string The word to grow.
    */
   grow(string) {
     const glyph = this._createGlyph(string[0])
@@ -57,8 +47,8 @@ export class WordTree extends BaseTree {
   /**
    * Continue growing the word recursively.
    * @private
-   * @param {Branches.Glyph} prevGlyph - The previous glyph.
-   * @param {string} string - The remaining characters to grow.
+   * @param {Branches.Glyph} prevGlyph The previous glyph.
+   * @param {string} string The remaining characters to grow.
    */
   _growRecursive(prevGlyph, string) {
     // Only keep growing if we have characters left.
@@ -91,7 +81,7 @@ export class WordTree extends BaseTree {
   /**
    * Get the corresponding glyph for the character.
    * @private
-   * @param {string} char - The character.
+   * @param {string} char The character.
    * @returns {Branches.Glyph}
    */
   _createGlyph(char) {
@@ -116,18 +106,18 @@ export class WordTree extends BaseTree {
    * Check if a glyph crosses this tree.
    * @private
    * @param {Branches.Glyph} glyph
-   * @returns {boolean} – Wether or not the glyph crosses.
+   * @returns {boolean} Wether or not the glyph crosses.
    */
   _crossesGlyph(glyph) {
     const { glyphs } = this
     for (let i = 0; i < glyphs.length; i++) {
       // TODO find good thresholds.
-      if (
-        Math.abs(glyphs[i].position.x - glyph.position.x) > 100 &&
-        Math.abs(glyphs[i].position.y - glyph.position.y) > 100
-      ) {
-        continue
-      }
+      // if (
+      //   Math.abs(glyphs[i].position.x - glyph.position.x) > 100 &&
+      //   Math.abs(glyphs[i].position.y - glyph.position.y) > 100
+      // ) {
+      //   continue
+      // }
 
       for (const branchA of glyph.branches) {
         for (const branchB of glyphs[i].branches) {
@@ -135,7 +125,7 @@ export class WordTree extends BaseTree {
           // they should intersect there.
           const intersections = branchA.getIntersections(
             branchB,
-            inter => !inter.point.equals(glyph.trunk.firstSegment.point)
+            (inter) => !inter.point.equals(glyph.trunk.firstSegment.point)
           )
           // Allow one intersection, if it isn't a crossing. If branches can
           // touch themselves at one point it will result in a 'fuller' tree.

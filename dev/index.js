@@ -1,5 +1,5 @@
 import paper, { view } from 'paper'
-import { Font, Tree } from '../src'
+import { Font, Tree, WordTree } from '../src'
 ;(async () => {
   paper.setup(document.querySelector('canvas'))
 
@@ -8,9 +8,6 @@ import { Font, Tree } from '../src'
 
   const tree = new Tree({ font })
   tree.grow(['hallo', 'wie', 'geht', 'es', 'dir'])
-
-  console.log(tree.item.strokeScaling)
-
   tree.item.scale(0.5)
-  tree.position = view.bounds.bottomCenter.subtract(0, 100)
+  tree.position = view.bounds.bottomCenter.subtract(100)
 })()

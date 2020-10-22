@@ -1,22 +1,14 @@
-/**
- * @typedef {Object} KerningInfo
- * @property {paper.Raster} raster - The rasterized item.
- * @property {number} width - The raster's width.
- * @property {number} height - The raster's height.
- * @property {number} resolution - The items's resolution.
- * @property {Object} edges - The raster's left and right edge.
- */
+import './typedef'
 
 export class Kerner {
   /**
    * @param {Object} [param]
-   * @param {number} [param.resolution] – The resolution in which the items will
+   * @param {number} [param.resolution] The resolution in which the items will
    * be rasterized.
-   * @param {number} [param.spacing] – The space between two kerned items in px.
-   * @param {string='left-to-right', 'right-to-left'} [param.writingMode] – The
+   * @param {number} [param.spacing] The space between two kerned items in px.
+   * @param {string='left-to-right', 'right-to-left'} [param.writingMode] The
    * writing mode.
-   * @param {boolean} [param.debug] – Wether or not to show debugging
-   * information.
+   * @param {boolean} [param.debug] Wether or not to show debugging information.
    */
   constructor({
     resolution = 10,
@@ -61,9 +53,8 @@ export class Kerner {
    * Place itemA next to itemB and move as close as possible without the two
    * items colliding. For performance reasons we use a raster instead of
    * paper.js' getIntersections method.
-   * @private
-   * @param {paper.Item} itemA – The item to be kerned.
-   * @param {paper.Item} itemB – The item to be kerned with.
+   * @param {paper.Item} itemA The item to be kerned.
+   * @param {paper.Item} itemB The item to be kerned with.
    */
   kern(itemA, itemB) {
     const infoA = this._getKerningInfo(itemA)
@@ -120,9 +111,10 @@ export class Kerner {
   }
 
   /**
+   * Get left and right edge of the raster.
    * @private
    * @param {paper.Raster} raster
-   * @returns {object} - The left and right edge.
+   * @returns {object} The left and right edge.
    */
   _getEdges(raster) {
     return {
@@ -135,8 +127,8 @@ export class Kerner {
    * Find the left or right edge of the raster.
    * @private
    * @param {paper.Raster} raster
-   * @param {string='left', 'right'} side
-   * @returns {Array<number>}
+   * @param {('left'|'right')} side
+   * @returns {number[]}
    */
   _getEdge(raster, side) {
     const edge = []

@@ -2,25 +2,13 @@ import { Group } from 'paper'
 import { Kerner } from './Kerner'
 import { BaseTree } from './BaseTree'
 import { WordTree } from './WordTree'
-
-/**
- * An array of either arrays or words. Each array will be a new Tree and each
- * word a WordTree.
- * @example
- * // This describes a tree consisting of two trees, each of them consisting of
- * // two word trees.
- * const content = [
- *    ['test', 'one],
- *    ['test', 'two']
- * ]
- * @typedef {Array} BranchesContent
- */
+import './typedef'
 
 export class Tree extends BaseTree {
   /**
-   * @param {object} [options] - The options.
+   * @param {WordTreeOptions} options
    */
-  constructor(options = {}) {
+  constructor(options) {
     super()
     this.options = options
     this.kerner = new Kerner()
@@ -36,7 +24,7 @@ export class Tree extends BaseTree {
 
   /**
    * Grow child trees.
-   * @param {BranchesContent} content – The content.
+   * @param {BranchesContent} content The content.
    */
   grow(content) {
     for (const el of content) {
@@ -74,7 +62,7 @@ export class Tree extends BaseTree {
   /**
    * Distribute the trees into left and right side.
    * @private
-   * @returns {Object} – An object containing the distributed trees.
+   * @returns {Object} An object containing the distributed trees.
    */
   _distributeTrees() {
     const { item, trees } = this
@@ -114,14 +102,6 @@ export class Tree extends BaseTree {
     }
 
     return { left, center, right }
-  }
-
-  /**
-   * @private
-   * @param {Array<Branches.Tree>} trees
-   */
-  _getTreesWidth(trees) {
-    return trees[trees.length - 1].item.bounds.x - trees[0].item.bounds.x
   }
 
   /**

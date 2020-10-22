@@ -1,10 +1,12 @@
 import { Group, Path } from 'paper'
 
 export class BaseTree {
+  item = new Group()
+  /** @type {BaseTree[]} */
+  trees = []
+
   constructor() {
-    const item = (this.item = new Group())
-    item.data.fu = 'aha'
-    this.trunk = item.addChild(
+    this.trunk = this.item.addChild(
       new Path({ name: 'trunk', strokeColor: 'blue', strokeScaling: false })
     )
   }

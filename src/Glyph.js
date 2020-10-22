@@ -3,7 +3,7 @@ import { shuffleArray } from './utils'
 
 export class Glyph {
   /**
-   * @param {Branches.GlyphDefinition} definition – The definition for the
+   * @param {Branches.GlyphDefinition} definition The definition for the
    * glyph.
    */
   constructor(definition) {
@@ -47,10 +47,10 @@ export class Glyph {
 
   /**
    * Sort the branches of the glyph.
-   * @param {GrowingOrder} order - The sorting order.
-   * @param {boolean} startAtTrunk - Wether or not to start growing branches at
+   * @param {GrowingOrder} order The sorting order.
+   * @param {boolean} startAtTrunk Wether or not to start growing branches at
    * the trunk.
-   * @returns {Array<paper.Path>}
+   * @returns {paper.Path[]}
    */
   sortBranches(order, startAtTrunk) {
     const branches = [...this.branches]
