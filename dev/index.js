@@ -7,7 +7,9 @@ import { Font, Tree, WordTree } from '../src'
   await font.load(require('../src/branches.svg'))
 
   const tree = new Tree({ font })
-  tree.grow(['hallo', 'wie', 'geht', 'es', 'dir'])
-  tree.item.scale(0.5)
+  tree.grow(
+    'import the mock and the mock method shared by all instances'.split(' ')
+  )
+  tree.item.scale(0.4)
   tree.position = view.bounds.bottomCenter.subtract(100)
 })()
