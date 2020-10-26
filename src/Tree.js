@@ -46,17 +46,6 @@ export class Tree extends BaseTree {
   }
 
   /**
-   * Remove all child trees.
-   */
-  chop() {
-    for (const tree of this.trees) {
-      tree.remove()
-    }
-    this.item.removeChildren()
-    this.trees = []
-  }
-
-  /**
    * Add a child tree and it's item.
    * @private
    * @param {Branches.Tree} tree
@@ -99,11 +88,17 @@ export class Tree extends BaseTree {
         const side = tree.bounds.center.x < threshold ? left : right
         side.push(tree)
       }
-      // Then we pick the center tree from the bigger side.
-      center =
-        left[left.length - 1].bounds.right > threshold
-          ? left.pop()
-          : right.shift()
+      // How we pick the center tree is bit tricky but will yield to more
+      // balanced sides. If both sides have more than one children, we compare
+      // which side would be bigger *after* we have picked the center tree of
+      // them. Otherwise we just compare which side is bigger.
+      const leftIsBigger =
+        left.length > 1 && right.length > 1
+          ? left[left.length - 2].bounds.right - left[0].bounds.left >
+            right[right.length - 1].bounds.right - right[1].bounds.left
+          : left[left.length - 1].bounds.right > threshold
+
+      center = leftIsBigger ? left.pop() : right.shift()
     }
 
     return { left, center, right }
