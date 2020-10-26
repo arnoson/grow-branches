@@ -6,10 +6,13 @@ import { Font, Tree, WordTree } from '../src'
   const font = new Font()
   await font.load(require('../src/branches.svg'))
 
-  const tree = new Tree({ font })
-  tree.grow(
-    'import the mock and the mock method shared by all instances'.split(' ')
-  )
-  tree.item.scale(0.4)
-  tree.position = view.bounds.bottomCenter.subtract(100)
+  let tree
+  document.querySelector('textarea').addEventListener('input', function () {
+    tree && tree.remove()
+    tree = new Tree({ font })
+    const content = this.value.trim().split(' ')
+    tree.grow(content)
+    tree.item.scale(0.2)
+    tree.position = view.center
+  })
 })()
