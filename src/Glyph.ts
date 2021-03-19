@@ -1,28 +1,33 @@
-import { project } from 'paper'
-import { shuffleArray } from './utils'
+import paper from 'paper'
+import { GlyphDefinition } from './GlyphDefinition'
+import { GrowingOrder } from './typedef'
+import { sortings } from './sortings'
+
+export type GlyphBranches = Array<paper.Path>
 
 export class Glyph {
-  /**
-   * @param {Branches.GlyphDefinition} definition The definition for the
-   * glyph.
-   */
-  constructor(definition) {
-    this.definition = definition
+  item: paper.Group
+  branches: GlyphBranches
+  trunk: paper.Path
+
+  constructor(public definition: GlyphDefinition) {
     const item = (this.item = definition.item.clone())
-    project.activeLayer.addChild(item)
-    this.branches = item.children
-    this.trunk = item.firstChild
+
+    paper.project.activeLayer.addChild(item)
+    this.branches = item.children as GlyphBranches
+
+    this.trunk = item.firstChild as paper.Path
     item.pivot = this.trunk.firstSegment.point
   }
 
   /**
    * Align the glyph at the end of the branch.
-   * @param {paper.Path} branch
    */
-  alignAtBranch(branch) {
+  alignAtBranch(branch: paper.Path) {
     this.alignVertical()
     const { item } = this
-    // Now rotate the glyph so it points in the same direction as the branch.
+
+    // Rotate the glyph so it points in the same direction as the branch.
     const tangentOut = branch.lastCurve.getTangentAt(branch.lastCurve.length)
     item.rotate(tangentOut.angle + 90)
 
@@ -39,32 +44,20 @@ export class Glyph {
 
   /**
    * Check if the glyph is 'hanging' lower than the specified glyph.
-   * @param {Branches.Glyph} glyph
    */
-  isLowerThan(glyph) {
+  isLowerThan(glyph: Glyph) {
     return this.item.bounds.bottomLeft.y > glyph.item.bounds.bottomLeft.y
   }
 
   /**
    * Sort the branches of the glyph.
-   * @param {GrowingOrder} order The sorting order.
-   * @param {boolean} startAtTrunk Wether or not to start growing branches at
-   * the trunk.
-   * @returns {paper.Path[]}
+   * @param order The sorting order.
+   * @param startAtTrunk Wether or not to start growing branches at the trunk.
    */
-  sortBranches(order, startAtTrunk) {
+  sortBranches(order: GrowingOrder, startAtTrunk: boolean) {
     const branches = [...this.branches]
-    const stortings = {
-      natural: (array) => array,
-      'left-right': (array) =>
-        array.sort((a, b) => a.lastSegment.point.x - b.lastSegment.point.x),
-      'right-left': (array) =>
-        array.sort((a, b) => b.lastSegment.point.x - a.lastSegment.point.x),
-      random: (array) => shuffleArray(array)
-    }
-
     // Sort the branches and move the trunk to the beginning, if necessary.
-    const sorted = stortings[order](branches)
+    const sorted = sortings[order](branches)
     if (startAtTrunk) {
       const index = sorted.indexOf(this.trunk)
       sorted.unshift(sorted.splice(index, 1)[0])

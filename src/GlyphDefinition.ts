@@ -1,10 +1,12 @@
 import { Glyph } from './Glyph'
 
 export class GlyphDefinition {
+  angleIn: number
+
   /**
-   * @param {paper.Group} item The original glyph item.
+   * @param item The original glyph item.
    */
-  constructor(item) {
+  constructor(public item: paper.Group) {
     if (!item.children) {
       throw new Error('Glyph item has to have at least one child.')
     }
@@ -15,9 +17,9 @@ export class GlyphDefinition {
       }
     }
 
-    this.item = item
     item.strokeScaling = false
-    this.angleIn = item.firstChild.firstCurve.getTangentAt(0).angle
+    const firstBranch = item.firstChild as paper.Path
+    this.angleIn = firstBranch.firstCurve.getTangentAt(0).angle
   }
 
   /**

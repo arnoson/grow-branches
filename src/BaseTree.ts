@@ -1,14 +1,17 @@
-import { Group, Path } from 'paper'
+import * as paper from 'paper'
 
 export class BaseTree {
-  item = new Group()
-  /** @type {BaseTree[]} */
-  trees = []
+  item = new paper.Group()
+  trees: BaseTree[]
+  trunk: paper.Path
 
   constructor() {
-    this.trunk = this.item.addChild(
-      new Path({ name: 'trunk', strokeColor: 'blue', strokeScaling: false })
-    )
+    this.trunk = new paper.Path({
+      name: 'trunk',
+      strokeColor: 'blue',
+      strokeScaling: false
+    })
+    this.item.addChild(this.trunk)
   }
 
   /**

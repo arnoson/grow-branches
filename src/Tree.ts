@@ -1,40 +1,44 @@
-import { Group, Path } from 'paper'
+import { Group, Segment } from 'paper'
 import { Kerner } from './Kerner'
 import { BaseTree } from './BaseTree'
-import { WordTree } from './WordTree'
-import './typedef'
+import { WordTree, WordTreeOptions } from './WordTree'
+import { BranchesContent } from './typedef'
 
-/**
- * @typedef {Object} DistributedTrees
- * @property {BaseTree[]} left
- * @property {BaseTree[]} right
- * @property {BaseTree} center
- */
+export interface DistributedTrees {
+  left: Array<BaseTree>
+  right: Array<BaseTree>
+  center: BaseTree
+}
 
 export class Tree extends BaseTree {
-  /**
-   * @param {WordTreeOptions} options
-   */
-  constructor(options) {
+  kerner = new Kerner()
+  trees: Array<BaseTree> = []
+  sideLeft: paper.Group
+  sideRight: paper.Group
+
+  constructor(public options: WordTreeOptions) {
     super()
     this.options = options
-    this.kerner = new Kerner()
-    /** @type {BaseTree[]} */
-    this.trees = []
 
-    this.sideLeft = this.item.addChild(
-      new Group({ name: 'side left', applyMatrix: false, rotation: -90 })
-    )
-    this.sideRight = this.item.addChild(
-      new Group({ name: 'side right', applyMatrix: false, rotation: 90 })
-    )
+    this.sideLeft = new Group({
+      name: 'side left',
+      applyMatrix: false,
+      rotation: -90
+    })
+
+    this.sideRight = new Group({
+      name: 'side right',
+      applyMatrix: false,
+      rotation: 90
+    })
+
+    this.item.addChildren([this.sideLeft, this.sideRight])
   }
 
   /**
    * Grow child trees.
-   * @param {BranchesContent} content The content.
    */
-  grow(content) {
+  grow(content: BranchesContent) {
     for (const el of content) {
       const Ctor = typeof el === 'string' ? WordTree : Tree
       const tree = new Ctor(this.options)
@@ -48,9 +52,8 @@ export class Tree extends BaseTree {
   /**
    * Add a child tree and it's item.
    * @private
-   * @param {Branches.Tree} tree
    */
-  _addTree(tree) {
+  _addTree(tree: BaseTree) {
     this.trees.push(tree)
     this.kerner.kern(tree.item, this.item)
     this.item.addChild(tree.item)
@@ -59,14 +62,13 @@ export class Tree extends BaseTree {
   /**
    * Distribute the trees into left and right side.
    * @private
-   * @returns {DistributedTrees} The distributed trees.
    */
-  _distributeTrees() {
+  _distributeTrees(): DistributedTrees {
     const { item, trees } = this
 
-    let center
-    const left = []
-    const right = []
+    let center: BaseTree
+    const left: Array<BaseTree> = []
+    const right: Array<BaseTree> = []
 
     if (trees.length === 1) {
       // If there is only one tree, we will place it at the center.
@@ -114,10 +116,10 @@ export class Tree extends BaseTree {
     const { left, center, right } = this._distributeTrees()
 
     sideLeft.removeChildren()
-    sideLeft.addChildren(left.map((tree) => tree.item))
+    sideLeft.addChildren(left.map(tree => tree.item))
 
     sideRight.removeChildren()
-    sideRight.addChildren(right.map((tree) => tree.item))
+    sideRight.addChildren(right.map(tree => tree.item))
 
     const [smallerSide, biggerSide] =
       sideLeft.bounds.height < sideRight.bounds.height
@@ -136,9 +138,9 @@ export class Tree extends BaseTree {
     // Adjust trunk.
     const { trunk } = this
     trunk.segments = [
-      [0, 0],
+      new Segment([0, 0]),
       // TODO check where does '20' come from?
-      [0, maxHeight + 20]
+      new Segment([0, maxHeight + 20])
     ]
 
     // Align both sides horizontally alongside the trunk ...
