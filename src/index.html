@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grow Branches</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      canvas {
+        width: 100%;
+        height: 100%;
+        background: yellow;
+      }
+
+      textarea {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas hdpi="on"></canvas>
+    <textarea></textarea>
+    <script type="module">
+      import paper from 'paper'
+      import { Font, Tree, WordTree } from '../src'
+      import fontSvg from '@/branches.svg'
+      ;(async () => {
+        paper.setup(document.querySelector('canvas'))
+
+        const font = new Font()
+        await font.load(fontSvg)
+
+        let tree
+        document
+          .querySelector('textarea')
+          .addEventListener('input', function () {
+            tree && tree.remove()
+            tree = new Tree({ font })
+            const content = this.value.trim().split(' ')
+            tree.grow(content)
+            tree.item.scale(0.2)
+            tree.position = paper.view.center
+          })
+      })()
+    </script>
+  </body>
+</html>
